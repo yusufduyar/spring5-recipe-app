@@ -4,6 +4,7 @@ import com.spring5.recipeapp.domain.*;
 import com.spring5.recipeapp.repositories.ICategoryRepository;
 import com.spring5.recipeapp.repositories.IRecipeRepository;
 import com.spring5.recipeapp.repositories.IUnitOfMeasureRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
@@ -14,6 +15,7 @@ import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.Set;
 
+@Slf4j
 @Component
 public class RecipeBootstrap implements ApplicationListener<ContextRefreshedEvent> {
 

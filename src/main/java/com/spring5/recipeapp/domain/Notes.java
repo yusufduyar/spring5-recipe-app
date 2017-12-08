@@ -4,8 +4,9 @@ import lombok.*;
 
 import javax.persistence.*;
 
-@Data
 @Entity
+@Data
+@EqualsAndHashCode(exclude = "recipe")
 public class Notes {
 
     @Id
@@ -17,5 +18,4 @@ public class Notes {
 
     @Lob
     private String recipeNotes;
-
 }
