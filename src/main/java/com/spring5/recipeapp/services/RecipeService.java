@@ -1,9 +1,13 @@
 package com.spring5.recipeapp.services;
 
+import com.spring5.recipeapp.commands.RecipeCommand;
+import com.spring5.recipeapp.converters.RecipeCommandToRecipe;
+import com.spring5.recipeapp.converters.RecipeToRecipeCommand;
 import com.spring5.recipeapp.domain.Recipe;
 import com.spring5.recipeapp.repositories.IRecipeRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -13,16 +17,20 @@ import java.util.Set;
 @Service
 public class RecipeService implements IRecipeService {
 
-    private IRecipeRepository recipeRepository;
+    private final IRecipeRepository recipeRepository;
+    private final RecipeToRecipeCommand recipeToRecipeCommand;
+    private final RecipeCommandToRecipe recipeCommandToRecipe;
 
-    public RecipeService(IRecipeRepository recipeRepository) {
+    public RecipeService(IRecipeRepository recipeRepository, RecipeToRecipeCommand recipeToRecipeCommand, RecipeCommandToRecipe recipeCommandToRecipe) {
         this.recipeRepository = recipeRepository;
+        this.recipeToRecipeCommand = recipeToRecipeCommand;
+        this.recipeCommandToRecipe = recipeCommandToRecipe;
     }
 
     @Override
     public Set<Recipe> getRecipes() {
         log.debug("This is from service");
-        Set<Recipe> recipes =new HashSet<>();
+        Set<Recipe> recipes = new HashSet<>();
         recipeRepository.findAll().iterator().forEachRemaining(recipes::add);
 
         return recipes;
@@ -31,9 +39,18 @@ public class RecipeService implements IRecipeService {
     @Override
     public Recipe findById(long l) {
         Optional<Recipe> recipeOptional = recipeRepository.findById(l);
-        if(!recipeOptional.isPresent()){
+        if (!recipeOptional.isPresent()) {
             throw new RuntimeException("Recipe Not Found");
         }
         return recipeOptional.get();
+    }
+
+    @Override
+    @Transactional
+    public RecipeCommand saveRecipeCommand(RecipeCommand recipeCommand) {
+        Recipe newRecipe = recipeCommandToRecipe.convert(recipeCommand);
+
+        Recipe savedRecipe = recipeRepository.save(newRecipe);
+        return recipeToRecipeCommand.convert(savedRecipe);
     }
 }
