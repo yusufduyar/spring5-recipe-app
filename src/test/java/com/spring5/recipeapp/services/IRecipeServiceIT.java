@@ -12,6 +12,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 import static org.junit.Assert.*;
 
 @RunWith(SpringRunner.class)
@@ -37,14 +39,27 @@ public class IRecipeServiceIT {
 
         //when
         recipeCommand.setDescription("newDescription");
-        RecipeCommand savedRecipeCommand =recipeService.saveRecipeCommand(recipeCommand);
+        RecipeCommand savedRecipeCommand = recipeService.saveRecipeCommand(recipeCommand);
 
         //then
         assertNotNull(savedRecipeCommand);
-        assertEquals("newDescription",savedRecipeCommand.getDescription());
-        assertEquals(recipe.getId(),savedRecipeCommand.getId());
-        assertEquals(recipe.getCategories().size(),savedRecipeCommand.getCategories().size());
-        assertEquals(recipe.getIngredients().size(),savedRecipeCommand.getIngredients().size());
+        assertEquals("newDescription", savedRecipeCommand.getDescription());
+        assertEquals(recipe.getId(), savedRecipeCommand.getId());
+        assertEquals(recipe.getCategories().size(), savedRecipeCommand.getCategories().size());
+        assertEquals(recipe.getIngredients().size(), savedRecipeCommand.getIngredients().size());
+    }
+
+    @Test
+    public void deleteById_deletes_recipe_by_its_id() {
+            Iterable<Recipe> recipes = recipeRepository.findAll();
+            Recipe firstRecipe = recipes.iterator().next();
+            Long recipeIdToDelete = firstRecipe.getId();
+
+            recipeService.deleteById(recipeIdToDelete);
+
+            Optional<Recipe> recipeAfterDelete = recipeRepository.findById(recipeIdToDelete);
+
+            assertEquals(recipeAfterDelete,Optional.empty());
 
     }
 }

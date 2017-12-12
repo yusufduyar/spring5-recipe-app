@@ -64,4 +64,15 @@ public class RecipeServiceTest {
         verify(recipeRepository,times(1)).findAll();
     }
 
+    @Test
+    public void recipe_service_deletes_by_id() throws Exception{
+        //given
+        Long idValue = Long.valueOf(1L);
+
+        //when
+        recipeService.deleteById(idValue);
+
+        //then
+        verify(recipeRepository,times(1)).deleteById(anyLong());
+    }
 }
