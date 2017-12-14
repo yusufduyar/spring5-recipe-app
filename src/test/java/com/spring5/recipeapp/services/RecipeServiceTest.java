@@ -59,6 +59,11 @@ public class RecipeServiceTest {
         Recipe returnedRecipe = recipeService.findById(1L);
     }
 
+    @Test(expected = NumberFormatException.class)
+    public void getRecipeById_throws_NumberFormatException_when_id_is_not_a_number() throws Exception{
+        Recipe returnedRecipe = recipeService.findById(Long.valueOf("asd"));
+    }
+
     @Test
     public void getRecipesTest() throws Exception {
         Recipe recipe = new Recipe();

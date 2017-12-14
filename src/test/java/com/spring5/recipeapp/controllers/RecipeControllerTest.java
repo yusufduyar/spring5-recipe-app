@@ -30,7 +30,9 @@ public class RecipeControllerTest {
         MockitoAnnotations.initMocks(this);
 
         controller = new RecipeController(recipeService);
-        mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(controller)
+                .setControllerAdvice(new ControllerExceptionHandler())
+                .build();
     }
 
     @Test
@@ -48,7 +50,7 @@ public class RecipeControllerTest {
     }
 
     @Test
-    public void getRecipe_NotFound_test() throws Exception{
+    public void getRecipe_NotFound_test() throws Exception {
         when(recipeService.findById(anyLong())).thenThrow(NotFoundException.class);
 
         mockMvc.perform(get("/recipe/1/show"))
@@ -56,6 +58,13 @@ public class RecipeControllerTest {
                 .andExpect(view().name("404error"));
 
 
+    }
+
+    @Test
+    public void getRecipe_Throws_NumberFormatException_when_id_is_not_a_number() throws Exception {
+        mockMvc.perform(get("/recipe/asd/show"))
+                .andExpect(status().isBadRequest())
+                .andExpect(view().name("400error"));
     }
 
     @Test
@@ -69,6 +78,40 @@ public class RecipeControllerTest {
     }
 
     @Test
+    public void testPostNewRecipeForm() throws Exception {
+        RecipeCommand command = new RecipeCommand();
+        command.setId(2L);
+
+        when(recipeService.saveRecipeCommand(any())).thenReturn(command);
+
+        mockMvc.perform(post("/recipe")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("id", "")
+                .param("description", "some string")
+                .param("directions", "some directions")
+        )
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/recipe/2/show"));
+    }
+
+    @Test
+    public void testPostNewRecipeFormValidationFail() throws Exception {
+        RecipeCommand command = new RecipeCommand();
+        command.setId(2L);
+
+        when(recipeService.saveRecipeCommand(any())).thenReturn(command);
+
+        mockMvc.perform(post("/recipe")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("id", "")
+
+        )
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("recipe"))
+                .andExpect(view().name("recipe/recipeform"));
+    }
+
+    @Test
     public void when_a_post_request_comes_with_a_new_recipeCommand_then_controller_should_save_and_redirect_to_show() throws Exception {
         RecipeCommand newRecipeCommand = new RecipeCommand();
         newRecipeCommand.setId(2L);
@@ -78,7 +121,10 @@ public class RecipeControllerTest {
         mockMvc.perform(post("/recipe")
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .param("id", "")
-                .param("description", "description"))
+                .param("description", "description")
+        .param("directions","directions")
+        )
+
                 .andExpect(status().is3xxRedirection())
                 .andExpect(view().name("redirect:/recipe/2/show"));
 
@@ -86,7 +132,7 @@ public class RecipeControllerTest {
 
     @Test
     public void when_a_get_request_comes_to_update_with_id_then_controller_should_return_same_recipe_form() throws Exception {
-        RecipeCommand command= new RecipeCommand();
+        RecipeCommand command = new RecipeCommand();
         command.setId(2L);
 
         when(recipeService.findCommandById(anyLong())).thenReturn(command);
@@ -98,11 +144,13 @@ public class RecipeControllerTest {
     }
 
     @Test
-    public void when_a_get_request_to_delete_then_controller_should_redirect_to_main_page() throws Exception{
+    public void when_a_get_request_to_delete_then_controller_should_redirect_to_main_page() throws Exception {
         mockMvc.perform(get("/recipe/1/delete"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(view().name("redirect:/"));
 
-        verify(recipeService,times(1)).deleteById(anyLong());
+        verify(recipeService, times(1)).deleteById(anyLong());
     }
+
+
 }
